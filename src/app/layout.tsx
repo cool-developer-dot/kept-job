@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Caveat, Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const geist = Geist({
@@ -23,6 +23,15 @@ const geistMono = Geist_Mono({
   preload: false,
 });
 
+/* handwriting on the message slips; below the fold, so not preloaded */
+const caveat = Caveat({
+  variable: "--font-hand",
+  subsets: ["latin"],
+  weight: "500",
+  display: "swap",
+  preload: false,
+});
+
 const TITLE = "Kept Job — Stop losing jobs to voicemail";
 const DESCRIPTION =
   "After-hours and overflow call answering for field-service teams. When you're on a roof at 7pm, we answer. Your phone buzzes with the lead.";
@@ -42,7 +51,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${geist.variable} ${instrument.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${geist.variable} ${instrument.variable} ${geistMono.variable} ${caveat.variable} h-full antialiased`}>
       <body className="min-h-full">{children}</body>
     </html>
   );
