@@ -1,0 +1,819 @@
+@import "tailwindcss";
+
+:root {
+  --paper: #f7f5ef;
+  --sand: #efebe3;
+  --ink: #0b1f33;
+  --ink-2: #16314d;
+  --signal: #d4552b;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-io: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-sand: var(--sand);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-signal: var(--signal);
+  --font-sans: var(--font-geist), system-ui, sans-serif;
+  --font-serif: var(--font-instrument), Georgia, serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  background: var(--paper);
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist), system-ui, sans-serif;
+  overflow-x: clip;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* paper grain, laid over everything once (static, so it costs nothing while scrolling) */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.04  0 0 0 0 0.12  0 0 0 0 0.2  0 0 0 0.7 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ================================================================== */
+/*  Type & layout                                                      */
+/* ================================================================== */
+@layer components {
+  .wrap {
+    margin-inline: auto;
+    width: 100%;
+    max-width: 1240px;
+    padding-inline: 20px;
+  }
+  @media (min-width: 640px) {
+    .wrap {
+      padding-inline: 32px;
+    }
+  }
+
+  .display {
+    font-family: var(--font-instrument), Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(3.4rem, 8.6vw, 7.25rem);
+    line-height: 0.9;
+    letter-spacing: -0.028em;
+  }
+
+  .h2 {
+    font-family: var(--font-instrument), Georgia, serif;
+    font-weight: 400;
+    font-size: clamp(2.5rem, 5.4vw, 4.6rem);
+    line-height: 0.98;
+    letter-spacing: -0.022em;
+  }
+
+  .eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-geist-mono), ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .eyebrow::before {
+    content: "";
+    width: 22px;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.6;
+  }
+
+  .lede {
+    font-size: clamp(1.05rem, 1.35vw, 1.2rem);
+    line-height: 1.6;
+    text-wrap: pretty;
+  }
+
+  /* ---------- buttons: the label rolls up to a copy of itself on hover ---------- */
+  .btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    border-radius: 999px;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    transition:
+      transform 0.5s var(--ease),
+      background-color 0.3s,
+      box-shadow 0.5s var(--ease);
+  }
+  .btn:active {
+    transform: scale(0.97);
+  }
+  .btn:focus-visible {
+    outline: 2px solid var(--signal);
+    outline-offset: 3px;
+  }
+  .btn-ink {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-ink:hover {
+    background: var(--ink-2);
+    box-shadow: 0 14px 34px -14px rgba(11, 31, 51, 0.6);
+  }
+  .btn-ghost {
+    color: var(--ink);
+    box-shadow: inset 0 0 0 1px rgba(11, 31, 51, 0.22);
+  }
+  .btn-ghost:hover {
+    box-shadow: inset 0 0 0 1px var(--ink);
+  }
+  .btn-paper {
+    background: var(--paper);
+    color: var(--ink);
+  }
+  .btn-paper:hover {
+    background: #fff;
+    box-shadow: 0 14px 40px -14px rgba(0, 0, 0, 0.5);
+  }
+  .roll {
+    display: inline-block;
+    height: 1.3em;
+    overflow: hidden;
+    line-height: 1.3em;
+  }
+  .roll > span {
+    display: block;
+    transition: transform 0.6s var(--ease);
+  }
+  .roll > span::after {
+    content: attr(data-t);
+    display: block;
+  }
+  .btn:hover .roll > span {
+    transform: translateY(-50%);
+  }
+  .btn .arr {
+    transition: transform 0.5s var(--ease);
+  }
+  .btn:hover .arr {
+    transform: translateX(3px);
+  }
+
+  .link-u {
+    background: linear-gradient(currentColor, currentColor) 0 100% / 0 1px no-repeat;
+    transition: background-size 0.5s var(--ease);
+  }
+  .link-u:hover {
+    background-size: 100% 1px;
+  }
+
+  /* ---------- FAQ accordion ---------- */
+  .acc {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.55s var(--ease);
+  }
+  .acc[data-open="true"] {
+    grid-template-rows: 1fr;
+  }
+  .acc > div {
+    overflow: hidden;
+  }
+  .acc > div > * {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 0.4s,
+      transform 0.55s var(--ease);
+  }
+  .acc[data-open="true"] > div > * {
+    opacity: 1;
+    transform: none;
+    transition-delay: 0.08s;
+  }
+  .plus i {
+    position: absolute;
+    width: 12px;
+    height: 1.5px;
+    background: currentColor;
+    border-radius: 1px;
+    transition: transform 0.5s var(--ease);
+  }
+  .plus i + i {
+    transform: rotate(90deg);
+  }
+  .plus[data-open="true"] {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .plus[data-open="true"] i + i {
+    transform: rotate(0deg);
+  }
+
+  /* ---------- header ---------- */
+  .hdr {
+    transition:
+      transform 0.6s var(--ease),
+      background-color 0.4s,
+      box-shadow 0.4s;
+  }
+
+  /* ---------- the day timeline (problem section) ---------- */
+  .tl-fill {
+    transform-origin: 0 0;
+    transform: scaleY(var(--p, 0));
+  }
+  @media (min-width: 768px) {
+    .tl-fill {
+      transform: scaleX(var(--p, 0));
+    }
+  }
+  .tl-kept {
+    transform: scale(0);
+    transition: transform 0.5s var(--ease);
+  }
+  [data-kept="true"] .tl-kept {
+    transform: scale(1);
+  }
+  .tl-flip {
+    transition: transform 0.7s var(--ease);
+  }
+  [data-kept="true"] .tl-flip {
+    transform: translateY(-50%);
+  }
+  .tl-what {
+    transition: color 0.5s;
+  }
+  [data-kept="true"] .tl-what {
+    color: var(--ink);
+  }
+
+  /* ---------- odometer price ---------- */
+  .odo-win {
+    display: block;
+    height: 1.04em;
+    overflow: hidden;
+  }
+  .odo-col {
+    display: flex;
+    flex-direction: column;
+    transform: translateY(calc(var(--n) * -1.04em));
+  }
+  .odo-col > span {
+    display: block;
+    height: 1.04em;
+    line-height: 1.04;
+  }
+
+  /* ---------- who it's for: dot grid backdrop ---------- */
+  .who-dots {
+    background-image: radial-gradient(rgba(247, 245, 239, 0.09) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(80% 70% at 70% 60%, #000 20%, transparent 75%);
+  }
+}
+
+/* ================================================================== */
+/*  Motion: only for people who haven't asked for less of it.          */
+/*  Without this block every element simply sits in its final state.   */
+/* ================================================================== */
+@media (prefers-reduced-motion: no-preference) {
+  /* --- scroll reveal: rise out of a soft blur --- */
+  .rv {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate3d(0, 24px, 0);
+    transition:
+      opacity 1s var(--ease),
+      filter 1s var(--ease),
+      transform 1.2s var(--ease);
+    transition-delay: var(--d, 0s);
+  }
+  .in-view .rv {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+
+  /* --- masked lines: each line of a heading rises from behind its own edge --- */
+  .ml > span {
+    transform: translate3d(0, 108%, 0) rotate(2.5deg);
+    transform-origin: 0 100%;
+    transition: transform 1.25s var(--ease);
+    transition-delay: var(--d, 0s);
+  }
+  .in-view .ml > span {
+    transform: none;
+  }
+
+  /* --- the hero runs the same moves on load, without waiting for JavaScript --- */
+  .on-load .ml > span {
+    animation: line-in 1.25s var(--ease) var(--d, 0s) both;
+  }
+  .on-load .rv {
+    animation: rv-in 1.2s var(--ease) var(--d, 0s) both;
+  }
+  .hdr-in {
+    animation: hdr-in 1s var(--ease) 0.1s both;
+  }
+  .strike::after {
+    animation: strike 0.9s var(--ease) 1.35s both;
+  }
+
+  .draw path {
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1.5s var(--ease-io) 0.7s;
+  }
+  .in-view .draw path {
+    stroke-dashoffset: 0;
+  }
+
+  .odo-col {
+    transform: translateY(0);
+    transition: transform 2.2s var(--ease);
+    transition-delay: var(--d, 0s);
+  }
+  .in-view .odo-col {
+    transform: translateY(calc(var(--n) * -1.04em));
+  }
+
+  /* --- the phone demo --- */
+  .demo[data-live="false"] * {
+    animation-play-state: paused !important;
+  }
+  .ripple {
+    animation: ripple 2.4s var(--ease) var(--d, 0s) infinite;
+  }
+  .ring-shake {
+    animation: ring-shake 1.2s var(--ease-io) infinite;
+  }
+  .shimmer {
+    background: linear-gradient(90deg, rgba(247, 245, 239, 0.35) 0%, #f7f5ef 50%, rgba(247, 245, 239, 0.35) 100%) -100% 0 / 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 2.2s linear infinite;
+  }
+  .bubble {
+    animation: bubble-in 0.7s var(--ease) var(--d, 0s) both;
+  }
+  .field {
+    animation: field-on 0.6s var(--ease) var(--d, 0s) both;
+  }
+  .notif {
+    animation: notif-in 0.9s var(--ease) var(--d, 0s) both;
+  }
+  .chip-in {
+    animation: chip-in 0.7s var(--ease) both;
+  }
+  .buzz {
+    animation: buzz 0.55s var(--ease-io) 0.55s 2;
+  }
+  .wave i {
+    animation: wave 1s var(--ease-io) var(--d, 0s) infinite;
+  }
+  .live-blink {
+    animation: blink 1.6s ease-in-out infinite;
+  }
+  .breathe {
+    animation: breathe 9s var(--ease-io) infinite;
+  }
+
+  /* --- loops that only run while their section is on screen --- */
+  .tl-ping {
+    animation: none;
+  }
+  .is-live [data-kept="false"] .tl-ping {
+    animation: ping 1.8s var(--ease) infinite;
+  }
+
+  /* who it's for: icons draw themselves in, the spotlighted trade rings */
+  .tdraw path {
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 1.6s var(--ease-io) calc(var(--d, 0s) + 0.3s);
+  }
+  .in-view .tdraw path {
+    stroke-dashoffset: 0;
+  }
+  .tdraw-now path {
+    animation: draw-in 1.1s var(--ease-io) both;
+  }
+  .tile-on .tile-icon {
+    animation: nudge 0.9s var(--ease-io) both;
+  }
+  .is-live .tile-ping {
+    animation: ping 1.6s var(--ease) infinite;
+  }
+  .tile-prog {
+    animation: grow-x linear both;
+  }
+  .who-ring {
+    animation: ripple 2.4s var(--ease) infinite paused;
+  }
+  .is-live .who-ring {
+    animation-play-state: running;
+  }
+
+  .cta-ring {
+    animation: cta-ring 3.6s var(--ease) var(--d, 0s) infinite paused;
+  }
+  .is-live .cta-ring {
+    animation-play-state: running;
+  }
+
+  /* how it works: one 9-second story told across three panels */
+  .is-live .hw-1 {
+    animation: hw-1 9s var(--ease) infinite;
+  }
+  .is-live .hw-2 {
+    animation: hw-2 9s var(--ease) infinite;
+  }
+  .is-live .hw-3 {
+    animation: hw-3 9s var(--ease) infinite;
+  }
+  .is-live .hw-ring {
+    animation: ripple 2.25s var(--ease) var(--d, 0s) infinite;
+  }
+  .is-live .hw-val {
+    animation: hw-type 9s steps(14, end) var(--d, 0s) infinite;
+  }
+  .is-live .hw-msg {
+    animation: hw-msg 9s var(--ease) infinite;
+  }
+  .is-live .hw-buzz {
+    animation: hw-buzz 9s var(--ease-io) infinite;
+  }
+  .is-live .hw-dot {
+    animation: hw-dot 9s var(--ease-io) infinite;
+  }
+
+  .wave-hover i {
+    transform: scaleY(0.35);
+    transition: transform 0.4s var(--ease);
+  }
+  .group:hover .wave-hover i {
+    animation: wave 0.9s var(--ease-io) var(--d, 0s) infinite;
+  }
+}
+
+/* final states that the motion block animates *into* */
+.strike {
+  position: relative;
+  white-space: nowrap;
+}
+.strike::after {
+  content: "";
+  position: absolute;
+  left: -0.03em;
+  right: -0.05em;
+  top: 54%;
+  height: 0.055em;
+  border-radius: 1em;
+  background: var(--signal);
+  transform-origin: 0 50%;
+}
+.ml {
+  display: block;
+  overflow: hidden;
+  padding: 0 0.06em 0.14em;
+  margin: 0 -0.06em -0.14em;
+}
+.ml > span {
+  display: block;
+}
+.draw path,
+.tdraw path,
+.tdraw-now path {
+  stroke-dasharray: 1;
+}
+.wave i,
+.wave-hover i {
+  display: block;
+  width: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: 50% 50%;
+}
+
+/* ================================================================== */
+/*  Keyframes                                                          */
+/* ================================================================== */
+@keyframes line-in {
+  from {
+    transform: translate3d(0, 108%, 0) rotate(2.5deg);
+  }
+  to {
+    transform: none;
+  }
+}
+@keyframes rv-in {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translate3d(0, 24px, 0);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    transform: none;
+  }
+}
+@keyframes hdr-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+@keyframes strike {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes ripple {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+@keyframes ring-shake {
+  0%,
+  40%,
+  100% {
+    transform: rotate(0);
+  }
+  5%,
+  15%,
+  25% {
+    transform: rotate(-14deg);
+  }
+  10%,
+  20%,
+  30% {
+    transform: rotate(14deg);
+  }
+}
+@keyframes shimmer {
+  to {
+    background-position: 100% 0;
+  }
+}
+@keyframes bubble-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes field-on {
+  from {
+    opacity: 0.22;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes notif-in {
+  from {
+    opacity: 0;
+    transform: translateY(-28px) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes chip-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+    filter: blur(4px);
+  }
+}
+@keyframes buzz {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: translateX(-3px) rotate(-1.2deg);
+  }
+  40% {
+    transform: translateX(3px) rotate(1.2deg);
+  }
+  60% {
+    transform: translateX(-2px) rotate(-0.8deg);
+  }
+  80% {
+    transform: translateX(2px) rotate(0.8deg);
+  }
+}
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0.35;
+  }
+}
+@keyframes breathe {
+  50% {
+    transform: scale(1.035);
+  }
+}
+@keyframes ping {
+  0% {
+    box-shadow: 0 0 0 0 rgba(212, 85, 43, 0.45);
+  }
+  100% {
+    box-shadow: 0 0 0 12px rgba(212, 85, 43, 0);
+  }
+}
+@keyframes draw-in {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes nudge {
+  0%,
+  100% {
+    transform: none;
+  }
+  20% {
+    transform: rotate(-10deg) scale(1.08);
+  }
+  45% {
+    transform: rotate(8deg) scale(1.08);
+  }
+  70% {
+    transform: rotate(-4deg);
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes cta-ring {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+/* how it works — call (0–33%), details (35–65%), text (68–96%) */
+@keyframes hw-1 {
+  0%,
+  33%,
+  100% {
+    box-shadow: inset 0 0 0 1px rgba(11, 31, 51, 0.08);
+  }
+  4%,
+  29% {
+    box-shadow:
+      inset 0 0 0 1.5px var(--ink),
+      0 26px 50px -30px rgba(11, 31, 51, 0.45);
+  }
+}
+@keyframes hw-2 {
+  0%,
+  33%,
+  67%,
+  100% {
+    box-shadow: inset 0 0 0 1px rgba(11, 31, 51, 0.08);
+  }
+  37%,
+  63% {
+    box-shadow:
+      inset 0 0 0 1.5px var(--ink),
+      0 26px 50px -30px rgba(11, 31, 51, 0.45);
+  }
+}
+@keyframes hw-3 {
+  0%,
+  66%,
+  100% {
+    box-shadow: inset 0 0 0 1px rgba(11, 31, 51, 0.08);
+  }
+  70%,
+  95% {
+    box-shadow:
+      inset 0 0 0 1.5px var(--ink),
+      0 26px 50px -30px rgba(11, 31, 51, 0.45);
+  }
+}
+@keyframes hw-type {
+  0%,
+  37% {
+    clip-path: inset(0 100% 0 0);
+  }
+  43%,
+  84% {
+    clip-path: inset(0 0 0 0);
+  }
+  88%,
+  100% {
+    clip-path: inset(0 100% 0 0);
+  }
+}
+@keyframes hw-msg {
+  0%,
+  69% {
+    opacity: 0;
+    transform: translateY(14px) scale(0.95);
+  }
+  74%,
+  95% {
+    opacity: 1;
+    transform: none;
+  }
+  99%,
+  100% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+@keyframes hw-buzz {
+  0%,
+  69%,
+  77%,
+  100% {
+    transform: none;
+  }
+  70.5%,
+  73.5% {
+    transform: rotate(-12deg);
+  }
+  72%,
+  75% {
+    transform: rotate(12deg);
+  }
+}
+@keyframes hw-dot {
+  0%,
+  30% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  37%,
+  64% {
+    transform: translateX(33.6%);
+  }
+  71%,
+  95% {
+    transform: translateX(67.2%);
+    opacity: 1;
+  }
+  97%,
+  99% {
+    transform: translateX(67.2%);
+    opacity: 0;
+  }
+  99.5% {
+    transform: translateX(0);
+    opacity: 0;
+  }
+}
